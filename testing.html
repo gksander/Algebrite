@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>jCalc</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+	<!-- jQuery CDN -->
+    <script
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+      crossorigin="anonymous">
+    </script>
+
+    <!-- MathJax CDN. Configure to allow ASCIIMath, $...$ delimeters -->
+    <script type="text/x-mathjax-config">
+	    MathJax.Hub.Config({
+	      tex2jax: {
+    	        inlineMath: [['$','$'], ['\\(','\\)']],
+    	        processEscapes: true
+            }
+	    });
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+    <script src="dist/algebrite.bundle-for-browser.js"></script>
+
+    <style>
+        body {
+            text-align:center;
+        }
+    </style>
+</head>
+<body>
+	
+	<div id="container">
+		
+		<p>
+			<input type="text" id="calcInp">
+            <button id="calcButton" class='btn' type="button">Go!</button>
+		</p>
+		<p id="calcOut">${}$</p>
+        <p id="cgOut"></p>
+
+	</div>
+
+    <script>
+        
+        $("#calcInp").on("keyup", function(){
+            if (event.ctrlKey && event.keyCode == 13) {
+                calc();
+            }
+        });
+
+        var calc = function(){
+            var inp = $("#calcInp").val(),
+                os = '';
+            try {
+
+                // fd
+
+
+                var userInp = Algebrite.run(`printlatex( quote(${inp}) )`);
+                var outExpr = Algebrite.run(`printlatex(${inp})`);
+                var outVal = Algebrite.run(`printlatex(float(${inp}))`);
+                var showOutVal = (!isNaN(outVal)) && (parseFloat(outExpr) != parseFloat(outVal));
+
+                // Show user input
+                os = `
+                    \\begin{align}
+                        ${userInp} &= ${outExpr}
+                        ${showOutVal ? '\\\\ &= '+ outVal : ''}
+                    \\end{align}
+                `;
+                
+                
+            } catch (err){
+                os = '...';
+            }
+            // Sanitize a little more
+            os = !/(syntax)/.test(os) ? os : '...';
+
+            var calcOut = MathJax.Hub.getAllJax("calcOut")[0];
+            MathJax.Hub.Queue(["Text",calcOut,os]);
+
+            // $("#cgOut").html(Algebrite.run(inp));
+        }
+
+    </script>
+
+
+</body>
+</html>
